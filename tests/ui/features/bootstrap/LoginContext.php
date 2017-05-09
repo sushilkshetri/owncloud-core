@@ -21,6 +21,7 @@
 */
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\MinkExtension\Context\RawMinkContext;
 
 use Page\LoginPage;
@@ -34,6 +35,7 @@ class LoginContext extends RawMinkContext implements Context
 {
 	private $loginPage;
 	private $filesPage;
+	private $regularUserPassword;
 	public function __construct(LoginPage $loginPage)
 	{
 		$this->loginPage = $loginPage;
@@ -54,6 +56,15 @@ class LoginContext extends RawMinkContext implements Context
 	{
 		$this->filesPage = $this->loginPage->loginAs($username, $password);
 		$this->filesPage->waitTillPageIsloaded(10);
+	} 
+	
+	/**
+	 * @When I login with an existing user and a correct password
+	 */
+	public function iLoginWithAnExistingUserAndACorrectPassword()
+	{
+		$this->filesPage = $this->loginPage->loginAs("user1", $this->regularUserPassword);
+		$this->filesPage->waitTillPageIsloaded(10);
 	}
 	
 	/**
@@ -67,4 +78,11 @@ class LoginContext extends RawMinkContext implements Context
 		)->getHtml();
 		PHPUnit_Framework_Assert::assertEquals($title, $actualTitle);
 	}
+	
+	/** @BeforeScenario*/
+	public function setUpScenario(BeforeScenarioScope $scope)
+	{
+		$this->regularUserPassword = $scope->getSuite()->getSettings() ['context'] ['parameters'] ['context'] ['regularUserPassword'];
+	}
+	
 }

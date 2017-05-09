@@ -21,6 +21,8 @@
 */
 
 use Behat\Behat\Context\Context;
+use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
+use Behat\Testwork\Hook\Scope\AfterSuiteScope;
 use Behat\MinkExtension\Context\RawMinkContext;
 use Page\OwncloudPage;
 use Page\LoginPage;
@@ -42,11 +44,35 @@ class FeatureContext extends RawMinkContext implements Context
 	}
 	
 	/** @BeforeScenario @AdminLogin*/
-	public function setUpScenario()
+	public function setUpScenarioAdminLogin()
 	{
 		$this->loginPage->open();
 		$this->filesPage = $this->loginPage->loginAs("admin", "admin");
 		$this->filesPage->waitTillPageIsloaded(10);
+	}
+	
+	/** @BeforeSuite */
+	public static function setUpSuite(BeforeSuiteScope $scope)
+	{
+		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'] ['context'];
+		$ocPath = rtrim($suiteParameters['ocPath'], '/') . '/';
+		
+		$result=SetupHelper::createUser($ocPath, "user1", $suiteParameters['regularUserPassword']);
+		if ($result["code"] != 0) {
+			throw new Exception("could not create user. " . $result["stdOut"] . " " . $result["stdErr"]);
+		}
+	}
+	
+	/** @AfterSuite */
+	public static function tearDownSuite(AfterSuiteScope $scope)
+	{
+		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'] ['context'];
+		$ocPath = rtrim($suiteParameters['ocPath'], '/') . '/';
+		
+		$result=SetupHelper::deleteUser($ocPath, "user1");
+		if ($result["code"] != 0) {
+			throw new Exception("could not delete user. " . $result["stdOut"] . " " . $result["stdErr"]);
+		}
 	}
 	
 	/**
