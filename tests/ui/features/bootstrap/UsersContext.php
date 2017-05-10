@@ -37,7 +37,6 @@ class UsersContext extends RawMinkContext implements Context
 {
 	
 	private $loginPage;
-	private $filesPage;
 	private $usersPage;
 	private $owncloudPage;
 	

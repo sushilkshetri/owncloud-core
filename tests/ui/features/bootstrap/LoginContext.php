@@ -87,8 +87,7 @@ class LoginContext extends RawMinkContext implements Context
 	}
 
 	/** @BeforeScenario
-	* this will run before EVERY scenario, but it will set the propreties for
-	* this object
+	* This will run before EVERY scenario. It will set the properties for this object.
 	*/
 	public function before(BeforeScenarioScope $scope)
 	{
