@@ -26,6 +26,7 @@ use Behat\Mink\Exception\ExpectationException;
 
 use Page\LoginPage;
 use Page\UsersPage;
+use Page\OwncloudPage;
 
 require_once 'bootstrap.php';
 
@@ -34,11 +35,15 @@ require_once 'bootstrap.php';
  */
 class UsersContext extends RawMinkContext implements Context
 {
+	
 	private $loginPage;
 	private $filesPage;
 	private $usersPage;
-	public function __construct(LoginPage $loginPage, UsersPage $usersPage)
+	private $owncloudPage;
+	
+	public function __construct(OwncloudPage $owncloudPage, LoginPage $loginPage, UsersPage $usersPage)
 	{
+		$this->owncloudPage = $owncloudPage;
 		$this->loginPage = $loginPage;
 		$this->usersPage = $usersPage;
 	}

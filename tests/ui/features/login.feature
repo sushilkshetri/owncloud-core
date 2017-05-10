@@ -1,5 +1,6 @@
 Feature: login
 
+	@CreateRegularUsers
 	Scenario: simple user login
 		Given I am on login page
 		When I login with an existing user and a correct password

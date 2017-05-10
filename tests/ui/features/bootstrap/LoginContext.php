@@ -35,12 +35,14 @@ class LoginContext extends RawMinkContext implements Context
 {
 	private $loginPage;
 	private $filesPage;
+	private $regularUserNames;
 	private $regularUserPassword;
+
 	public function __construct(LoginPage $loginPage)
 	{
 		$this->loginPage = $loginPage;
 	}
-	
+
 	/**
 	 * @Given I am on login page
 	 */
@@ -48,7 +50,7 @@ class LoginContext extends RawMinkContext implements Context
 	{
 		$this->loginPage->open();
 	}
-	
+
 	/**
 	 * @When I login with username :username and password :password
 	 */
@@ -56,33 +58,45 @@ class LoginContext extends RawMinkContext implements Context
 	{
 		$this->filesPage = $this->loginPage->loginAs($username, $password);
 		$this->filesPage->waitTillPageIsloaded(10);
-	} 
-	
+	}
+
 	/**
 	 * @When I login with an existing user and a correct password
 	 */
 	public function iLoginWithAnExistingUserAndACorrectPassword()
 	{
-		$this->filesPage = $this->loginPage->loginAs("user1", $this->regularUserPassword);
+		$this->filesPage = $this->loginPage->loginAs($this->regularUserNames[0], $this->regularUserPassword);
 		$this->filesPage->waitTillPageIsloaded(10);
 	}
-	
+
 	/**
 	 * @Then I should be redirected to a page with the title :title
 	 */
 	public function iShouldBeRedirectedToAPageWithTheTitle($title)
 	{
-		
+
 		$actualTitle = $this->filesPage->find(
 			'xpath', './/title'
 		)->getHtml();
 		PHPUnit_Framework_Assert::assertEquals($title, $actualTitle);
 	}
-	
-	/** @BeforeScenario*/
-	public function setUpScenario(BeforeScenarioScope $scope)
+
+	public function setRegularUserNames ($regularUserNames)
 	{
-		$this->regularUserPassword = $scope->getSuite()->getSettings() ['context'] ['parameters'] ['regularUserPassword'];
+		$this->regularUserNames = $regularUserNames;
 	}
-	
+
+	/** @BeforeScenario
+	* this will run before EVERY scenario, but it will set the propreties for
+	* this object
+	*/
+	public function before(BeforeScenarioScope $scope)
+	{
+		// Get the environment
+		$environment = $scope->getEnvironment();
+		// Get all the contexts you need in this context
+		$featureContext = $environment->getContext('FeatureContext');
+		$this->regularUserNames = $featureContext->getRegularUserNames();
+		$this->regularUserPassword = $featureContext->getRegularUserPassword();
+	}
 }
