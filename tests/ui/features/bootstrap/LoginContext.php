@@ -82,7 +82,7 @@ class LoginContext extends RawMinkContext implements Context
 	/** @BeforeScenario*/
 	public function setUpScenario(BeforeScenarioScope $scope)
 	{
-		$this->regularUserPassword = $scope->getSuite()->getSettings() ['context'] ['parameters'] ['context'] ['regularUserPassword'];
+		$this->regularUserPassword = $scope->getSuite()->getSettings() ['context'] ['parameters'] ['regularUserPassword'];
 	}
 	
 }

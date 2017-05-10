@@ -54,7 +54,7 @@ class FeatureContext extends RawMinkContext implements Context
 	/** @BeforeSuite */
 	public static function setUpSuite(BeforeSuiteScope $scope)
 	{
-		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'] ['context'];
+		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
 		$ocPath = rtrim($suiteParameters['ocPath'], '/') . '/';
 		
 		$result=SetupHelper::createUser($ocPath, "user1", $suiteParameters['regularUserPassword']);
@@ -66,7 +66,7 @@ class FeatureContext extends RawMinkContext implements Context
 	/** @AfterSuite */
 	public static function tearDownSuite(AfterSuiteScope $scope)
 	{
-		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'] ['context'];
+		$suiteParameters = $scope->getEnvironment()->getSuite()->getSettings() ['context'] ['parameters'];
 		$ocPath = rtrim($suiteParameters['ocPath'], '/') . '/';
 		
 		$result=SetupHelper::deleteUser($ocPath, "user1");
