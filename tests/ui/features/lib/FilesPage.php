@@ -130,18 +130,67 @@ class FilesPage extends FilesPageBasic {
 	}
 
 	/**
+	 * Returns the same <0, 0, >0 as strcmp()
+	 * But the names can be in pieces in an array or as plain strings
+	 *
+	 * @param string|array $name1
+	 * @param string|array $name2
+	 * @return int
+	 */
+	public function strcmpNames($name1, $name2) {
+		if (is_array($name1)) {
+			$name1 = implode($name1);
+		}
+		if (is_array($name2)) {
+			$name2 = implode($name2);
+		}
+		
+		return strcmp($name1, $name2);
+	}
+
+	/**
 	 * moves a file or folder into an other folder by drag and drop
 	 * 
 	 * @param string|array $name
 	 * @param string|array $destination
 	 * @param Session $session
+	 * @param int $maxRetries
 	 * @return void
 	 */
-	public function moveFileTo($name, $destination, Session $session) {
+	public function moveFileTo(
+		$name, $destination, Session $session, $maxRetries = 5
+	) {
 		$toMoveFileRow = $this->findFileRowByName($name, $session);
 		$destinationFileRow = $this->findFileRowByName($destination, $session);
-		$toMoveFileRow->findFileLink()->dragTo($destinationFileRow->findFileLink());
-		$this->waitForAjaxCallsToStartAndFinish($session);
+		
+		$session->executeScript(
+			'
+			jQuery.countXHRRequests = 0;
+			(function(open) {
+				XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+					jQuery.countXHRRequests++;
+					open.call(this, method, url, async, user, pass);
+				};
+			})(XMLHttpRequest.prototype.open);
+			'
+		);
+		$countXHRRequests = 0;
+		$retryCounter = 0;
+		for ($retryCounter = 0; $retryCounter < $maxRetries; $retryCounter++) {
+			$toMoveFileRow->findFileLink()->dragTo($destinationFileRow->findFileLink());
+			$this->waitForAjaxCallsToStartAndFinish($session);
+			$countXHRRequests = $session->evaluateScript("jQuery.countXHRRequests");
+			if ($countXHRRequests === 0) {
+				error_log("Error while moving file file");
+			} else {
+				break;
+			}
+		}
+		if ($retryCounter > 0) {
+			$message = "INFORMATION: retried to move file " . $retryCounter . " times";
+			echo $message;
+			error_log($message);
+		}
 	}
 
 	/**
