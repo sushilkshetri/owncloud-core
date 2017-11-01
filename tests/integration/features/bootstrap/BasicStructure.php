@@ -4,6 +4,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Message\ResponseInterface;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
+use TestHelpers\OcsApiHelper;
 
 require __DIR__ . '/../../../../lib/composer/autoload.php';
 
@@ -184,26 +185,27 @@ trait BasicStructure {
 	 * @param \Behat\Gherkin\Node\TableNode $body
 	 */
 	public function sendingToWith($verb, $url, $body) {
-		$fullUrl = $this->baseUrl . "v{$this->apiVersion}.php" . $url;
-		$client = new Client();
-		$options = [];
+		$fd = [];
 		if ($this->currentUser !== 'UNAUTHORIZED_USER') {
+			$user = $this->currentUser;
 			if ($this->currentUser === 'admin') {
-				$options['auth'] = $this->adminUser;
+				$password = $this->adminUser[1];
 			} else {
-				$options['auth'] = [$this->currentUser, $this->regularUser];
+				$password = $this->regularUser;
 			}
+		} else {
+			$user = null;
+			$password = null;
 		}
 		if ($body instanceof \Behat\Gherkin\Node\TableNode) {
 			$fd = $body->getRowsHash();
-			$options['body'] = $fd;
 		}
 
-		try {
-			$this->response = $client->send($client->createRequest($verb, $fullUrl, $options));
-		} catch (\GuzzleHttp\Exception\ClientException $ex) {
-			$this->response = $ex->getResponse();
-		}
+		$this->response = OcsApiHelper::sendRequest(
+			$this->baseUrlWithoutOCSAppendix(),
+			$user, $password, $verb, $url, $fd, $this->apiVersion
+		);
+
 	}
 
 	/**
