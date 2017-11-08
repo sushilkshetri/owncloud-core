@@ -45,6 +45,12 @@ class FeatureContext extends RawMinkContext implements Context {
 	private $oldCSRFSetting = null;
 	
 	/**
+	 * 
+	 * @var Page\OwncloudPage
+	 */
+	private $currentPageObject = null;
+	
+	/**
 	 * @var string the original capabilities in XML format
 	 */
 	private $savedCapabilitiesXml;
@@ -106,6 +112,22 @@ class FeatureContext extends RawMinkContext implements Context {
 		$this->loginPage = $loginPage;
 	}
 
+	/**
+	 * 
+	 * @param OwncloudPage $pageObject
+	 * @return void
+	 */
+	public function setCurrentPageObject(OwncloudPage $pageObject) {
+		$this->currentPageObject = $pageObject;
+	}
+
+	/**
+	 * 
+	 * @return OwncloudPage
+	 */
+	public function getCurrentPageObject() {
+		return $this->currentPageObject;
+	}
 	/**
 	 * @Then a notification should be displayed with the text :notificationText
 	 * @param string $notificationText expected notification text

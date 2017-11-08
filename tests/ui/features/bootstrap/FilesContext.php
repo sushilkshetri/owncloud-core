@@ -21,6 +21,7 @@
  */
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\MinkExtension\Context\RawMinkContext;
 use Behat\Gherkin\Node\TableNode;
 use Page\FilesPage;
@@ -56,6 +57,12 @@ class FilesContext extends RawMinkContext implements Context {
 	 */
 	private $movedElementsTable = null;
 
+	/**
+	 *
+	 * @var FeatureContext
+	 */
+	private $featureContext;
+	
 	/**
 	 * FilesContext constructor.
 	 *
@@ -401,7 +408,7 @@ class FilesContext extends RawMinkContext implements Context {
 	 * @param string|array $name enclosed in single or double quotes
 	 * @param string $shouldOrNot
 	 * @param string|null $trashbin
-	 * @param PageObject|null $pageObject if null $this->filesPage will be used
+	 * @param PageObject|null $pageObject if null $this->featureContext->currentPageObject will be used
 	 * @return void
 	 */
 	public function theFileFolderShouldBeListed(
@@ -409,6 +416,9 @@ class FilesContext extends RawMinkContext implements Context {
 	) {
 		// The capturing group of the regex always includes the quotes at each
 		// end of the captured string, so trim them.
+		if (is_null($pageObject)) {
+			$pageObject = $this->featureContext->getCurrentPageObject();
+		}
 		$this->checkIfFileFolderIsListed(
 			trim($name, $name[0]), $shouldOrNot, $trashbin, $pageObject
 		);
@@ -589,5 +599,19 @@ class FilesContext extends RawMinkContext implements Context {
 			//this will close the menu again
 			$this->filesPage->clickFileActionsMenuBtnByNo($i);
 		}
+	}
+
+	/**
+	 * @BeforeScenario
+	 * This will run before EVERY scenario.
+	 * It will set the properties for this object.
+	 * @param BeforeScenarioScope $scope
+	 * @return void
+	 */
+	public function before(BeforeScenarioScope $scope) {
+		// Get the environment
+		$environment = $scope->getEnvironment();
+		// Get all the contexts you need in this context
+		$this->featureContext = $environment->getContext('FeatureContext');
 	}
 }

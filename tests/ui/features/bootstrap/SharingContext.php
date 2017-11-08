@@ -434,11 +434,10 @@ class SharingContext extends RawMinkContext implements Context {
 	}
 
 	/**
-	 * @Then the file/folder :fileName should be listed through the last created public link
-	 * @param string $fileName
+	 * @When I am accessing the last created public link
 	 * @return void
 	 */
-	public function theFileShouldBeListedThroughThePublicLink($fileName) {
+	public function iAmAccessingTheLastCreatedPublicLink() {
 		$lastCreatedLink = end($this->createdPublicLinks);
 		$path = str_replace(
 			$this->getMinkParameter('base_url'),
@@ -447,9 +446,8 @@ class SharingContext extends RawMinkContext implements Context {
 		);
 		$this->publicLinkFilesPage->setPagePath($path);
 		$this->publicLinkFilesPage->open();
-		$this->filesContext->checkIfFileFolderIsListed(
-			$fileName, "should", "", $this->publicLinkFilesPage
-		);
+		$this->publicLinkFilesPage->waitTillPageIsLoaded($this->getSession());
+		$this->featureContext->setCurrentPageObject($this->publicLinkFilesPage);
 	}
 
 	/**
