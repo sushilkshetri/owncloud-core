@@ -18,5 +18,5 @@ So that the user is forced to obey the policies of the server operator
 
 	Scenario: simple sharing by public link
 		And I create a new public link for the folder "simple-folder"
-		And I am accessing the last created public link
+		And I access the last created public link
 		Then the file "lorem.txt" should be listed

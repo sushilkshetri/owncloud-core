@@ -265,6 +265,23 @@ class SharingContext extends RawMinkContext implements Context {
 	}
 
 	/**
+	 * @When I access the last created public link
+	 * @return void
+	 */
+	public function iAccessTheLastCreatedPublicLink() {
+		$lastCreatedLink = end($this->createdPublicLinks);
+		$path = str_replace(
+			$this->getMinkParameter('base_url'),
+			"",
+			$lastCreatedLink['url']
+		);
+		$this->publicLinkFilesPage->setPagePath($path);
+		$this->publicLinkFilesPage->open();
+		$this->publicLinkFilesPage->waitTillPageIsLoaded($this->getSession());
+		$this->featureContext->setCurrentPageObject($this->publicLinkFilesPage);
+	}
+
+	/**
 	 * @Then all users and groups that contain the string :requiredString in their name should be listed in the autocomplete list
 	 * @param string $requiredString
 	 * @return void
@@ -431,23 +448,6 @@ class SharingContext extends RawMinkContext implements Context {
 		if ($sharingWasPossible === true) {
 			throw new Exception("It was possible to share the file");
 		}
-	}
-
-	/**
-	 * @When I am accessing the last created public link
-	 * @return void
-	 */
-	public function iAmAccessingTheLastCreatedPublicLink() {
-		$lastCreatedLink = end($this->createdPublicLinks);
-		$path = str_replace(
-			$this->getMinkParameter('base_url'),
-			"",
-			$lastCreatedLink['url']
-		);
-		$this->publicLinkFilesPage->setPagePath($path);
-		$this->publicLinkFilesPage->open();
-		$this->publicLinkFilesPage->waitTillPageIsLoaded($this->getSession());
-		$this->featureContext->setCurrentPageObject($this->publicLinkFilesPage);
 	}
 
 	/**

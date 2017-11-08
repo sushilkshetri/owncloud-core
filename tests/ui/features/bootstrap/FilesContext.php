@@ -414,11 +414,11 @@ class FilesContext extends RawMinkContext implements Context {
 	public function theFileFolderShouldBeListed(
 		$name, $shouldOrNot, $trashbin = "", $pageObject = null
 	) {
-		// The capturing group of the regex always includes the quotes at each
-		// end of the captured string, so trim them.
 		if (is_null($pageObject)) {
 			$pageObject = $this->featureContext->getCurrentPageObject();
 		}
+		// The capturing group of the regex always includes the quotes at each
+		// end of the captured string, so trim them.
 		$this->checkIfFileFolderIsListed(
 			trim($name, $name[0]), $shouldOrNot, $trashbin, $pageObject
 		);

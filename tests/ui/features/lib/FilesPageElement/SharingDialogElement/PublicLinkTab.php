@@ -160,7 +160,7 @@ class PublicLinkTab extends OwncloudPage {
 			throw new ElementNotFoundException(
 				__METHOD__ .
 				" xpath $this->linkUrlInputXpath" .
-				" could not find input field that containts the link URL"
+				" could not find input field that contains the link URL"
 			);
 		}
 		return $linkUrlInput->getValue();
