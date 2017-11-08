@@ -27,7 +27,7 @@ use Behat\Gherkin\Node\TableNode;
 use Page\FilesPage;
 use SensioLabs\Behat\PageObjectExtension\PageObject\Exception\ElementNotFoundException;
 use TestHelpers\AppConfigHelper;
-use Guzzle\Http\Message\Header;
+use Page\PublicLinkFilesPage;
 
 require_once 'bootstrap.php';
 
@@ -37,6 +37,7 @@ require_once 'bootstrap.php';
 class SharingContext extends RawMinkContext implements Context {
 
 	private $filesPage;
+	private $publicLinkFilesPage;
 	private $sharingDialog;
 	private $regularUserName;
 	private $regularUserNames;
@@ -47,14 +48,35 @@ class SharingContext extends RawMinkContext implements Context {
 	 * @var FeatureContext
 	 */
 	private $featureContext;
+	
+	/**
+	 * 
+	 * @var FilesContext
+	 */
+	private $filesContext;
+	private $createdPublicLinks = [];
 
 	/**
 	 * SharingContext constructor.
 	 *
 	 * @param FilesPage $filesPage
+	 * @param PublicLinkFilesPage $publicLinkFilesPage
 	 */
-	public function __construct(FilesPage $filesPage) {
+	public function __construct(
+		FilesPage $filesPage, PublicLinkFilesPage $publicLinkFilesPage
+	) {
 		$this->filesPage = $filesPage;
+		$this->publicLinkFilesPage = $publicLinkFilesPage;
+	}
+
+	/**
+	 * 
+	 * @param string $name
+	 * @param string $url
+	 * @return void
+	 */
+	private function addToListOfCreatedPublicLinks($name, $url) {
+		$this->createdPublicLinks[] = ["name" => $name, "url" => $url];
 	}
 
 	/**
@@ -172,7 +194,7 @@ class SharingContext extends RawMinkContext implements Context {
 			if (!isset($settingsArray['email'])) {
 				$settingsArray['email'] = null;
 			}
-			$publicShareTab->createLink(
+			$linkName = $publicShareTab->createLink(
 				$this->getSession(),
 				$settingsArray ['name'],
 				$settingsArray ['permission'],
@@ -180,9 +202,17 @@ class SharingContext extends RawMinkContext implements Context {
 				$settingsArray ['expiration'],
 				$settingsArray ['email']
 			);
+			if (!is_null($settingsArray['name'])) {
+				PHPUnit_Framework_Assert::assertSame(
+					$settingsArray ['name'], $linkName,
+					"set and retrieved public link names are not the same"
+				);
+			}
 		} else {
-			$publicShareTab->createLink($this->getSession());
+			$linkName = $publicShareTab->createLink($this->getSession());
 		}
+		$linkUrl = $publicShareTab->getLinkUrl($linkName);
+		$this->addToListOfCreatedPublicLinks($linkName, $linkUrl);
 	}
 	
 	/**
@@ -404,6 +434,25 @@ class SharingContext extends RawMinkContext implements Context {
 	}
 
 	/**
+	 * @Then the file/folder :fileName should be listed through the last created public link
+	 * @param string $fileName
+	 * @return void
+	 */
+	public function theFileShouldBeListedThroughThePublicLink($fileName) {
+		$lastCreatedLink = end($this->createdPublicLinks);
+		$path = str_replace(
+			$this->getMinkParameter('base_url'),
+			"",
+			$lastCreatedLink['url']
+		);
+		$this->publicLinkFilesPage->setPagePath($path);
+		$this->publicLinkFilesPage->open();
+		$this->filesContext->checkIfFileFolderIsListed(
+			$fileName, "should", "", $this->publicLinkFilesPage
+		);
+	}
+
+	/**
 	 * @BeforeScenario
 	 * This will run before EVERY scenario.
 	 * It will set the properties for this object.
@@ -415,6 +464,7 @@ class SharingContext extends RawMinkContext implements Context {
 		$environment = $scope->getEnvironment();
 		// Get all the contexts you need in this context
 		$this->featureContext = $environment->getContext('FeatureContext');
+		$this->filesContext = $environment->getContext('FilesContext');
 		$this->regularUserNames = $this->featureContext->getRegularUserNames();
 		$this->regularUserName = $this->featureContext->getRegularUserName();
 		$this->regularGroupNames = $this->featureContext->getRegularGroupNames();

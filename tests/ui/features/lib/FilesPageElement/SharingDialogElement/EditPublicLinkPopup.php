@@ -59,11 +59,12 @@ class EditPublicLinkPopup extends OwncloudPage {
 	}
 
 	/**
+	 * finds and returns the NodeElement of the name input field
 	 * 
-	 * @param string $name
-	 * @return void
+	 * @throws ElementNotFoundException
+	 * @return NodeElement
 	 */
-	public function setName($name) {
+	private function findNameInput() {
 		$nameInput = $this->popupElement->find("xpath", $this->nameInputXpath);
 		if (is_null($nameInput)) {
 			throw new ElementNotFoundException(
@@ -72,7 +73,26 @@ class EditPublicLinkPopup extends OwncloudPage {
 				" could not find input field for the name of the public link"
 			);
 		}
+		return $nameInput;
+	}
+
+	/**
+	 * 
+	 * @param string $name
+	 * @return void
+	 */
+	public function setLinkName($name) {
+		$nameInput = $this->findNameInput();
 		$nameInput->setValue($name);
+	}
+
+	/**
+	 * 
+	 * @return string
+	 */
+	public function getLinkName() {
+		$nameInput = $this->findNameInput();
+		return $nameInput->getValue();
 	}
 
 	/**
@@ -80,7 +100,7 @@ class EditPublicLinkPopup extends OwncloudPage {
 	 * @param string $permissions
 	 * @return void
 	 */
-	public function setPermissions($permissions) {
+	public function setLinkPermissions($permissions) {
 		$permissionsCheckbox = $this->popupElement->findField($permissions);
 		if (is_null($permissionsCheckbox)) {
 			throw new ElementNotFoundException(
@@ -97,7 +117,7 @@ class EditPublicLinkPopup extends OwncloudPage {
 	 * @param string $password
 	 * @return void
 	 */
-	public function setPassword($password) {
+	public function setLinkPassword($password) {
 		$passwordInput = $this->popupElement->find(
 			"xpath", $this->passwordInputXpath
 		);
@@ -116,7 +136,7 @@ class EditPublicLinkPopup extends OwncloudPage {
 	 * @param string $date
 	 * @return void
 	 */
-	public function setExpirationDate($date) {
+	public function setLinkExpirationDate($date) {
 		$expirationDateInput = $this->popupElement->find(
 			"xpath", $this->expirationDateInputXpath
 		);
@@ -147,7 +167,7 @@ class EditPublicLinkPopup extends OwncloudPage {
 	 * @param string $email
 	 * @return void
 	 */
-	public function setEmail($email) {
+	public function setLinkEmail($email) {
 		$emailInput = $this->popupElement->find("xpath", $this->emailInputXpath);
 		if (is_null($emailInput)) {
 			throw new ElementNotFoundException(

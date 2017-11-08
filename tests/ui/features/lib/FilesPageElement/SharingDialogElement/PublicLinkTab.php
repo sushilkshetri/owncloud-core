@@ -24,12 +24,10 @@
 namespace Page\FilesPageElement\SharingDialogElement;
 
 use Behat\Mink\Element\NodeElement;
-use SensioLabs\Behat\PageObjectExtension\PageObject\Factory;
 use Page\OwncloudPage;
 use SensioLabs\Behat\PageObjectExtension\PageObject\Exception\ElementNotFoundException;
 use Exception;
 use Behat\Mink\Session;
-use Behat\Mink\Element\Element;
 
 /**
  * The Public link tab of the Sharing Dialog
@@ -43,7 +41,9 @@ class PublicLinkTab extends OwncloudPage {
 	private $publicLinkTabId = "shareDialogLinkList";
 	private $createLinkBtnXpath = ".//button[@class='addLink']";
 	private $popupXpath = ".//div[@class='oc-dialog' and not(contains(@style,'display: none'))]";
-
+	private $linkEntryByNameXpath = ".//*[@class='link-entry--title' and .=%s]/..";
+	private $linkUrlInputXpath = ".//input";
+	
 	/**
 	 * as it's not possible to run __construct() we need to run this function
 	 * every time we get the tab with 
@@ -74,7 +74,7 @@ class PublicLinkTab extends OwncloudPage {
 	 * @param string $password
 	 * @param string $expirationDate
 	 * @param string $email
-	 * @return void
+	 * @return string the name of the created public link
 	 */
 	public function createLink(
 		Session $session,
@@ -106,22 +106,24 @@ class PublicLinkTab extends OwncloudPage {
 		);
 		$editPublicLinkPopupPageObject->setElement($popupElement);
 		if (!is_null($name)) {
-			$editPublicLinkPopupPageObject->setName($name);
+			$editPublicLinkPopupPageObject->setLinkName($name);
 		}
 		if (!is_null($permissions)) {
-			$editPublicLinkPopupPageObject->setPermissions($permissions);
+			$editPublicLinkPopupPageObject->setLinkPermissions($permissions);
 		}
 		if (!is_null($password)) {
-			$editPublicLinkPopupPageObject->setPassword($password);
+			$editPublicLinkPopupPageObject->setLinkPassword($password);
 		}
 		if (!is_null($expirationDate)) {
-			$editPublicLinkPopupPageObject->setExpirationDate($expirationDate);
+			$editPublicLinkPopupPageObject->setLinkExpirationDate($expirationDate);
 		}
 		if (!is_null($email)) {
-			$editPublicLinkPopupPageObject->setEmail($email);
+			$editPublicLinkPopupPageObject->setLinkEmail($email);
 		}
+		$linkName = $editPublicLinkPopupPageObject->getLinkName();
 		$editPublicLinkPopupPageObject->save();
 		$this->waitForAjaxCallsToStartAndFinish($session);
+		return $linkName;
 	}
 
 	/**
@@ -143,6 +145,25 @@ class PublicLinkTab extends OwncloudPage {
 		$email = null
 	) {
 		throw new Exception("not implemented");
+	}
+
+	/**
+	 * 
+	 * @param string $name
+	 * @throws ElementNotFoundException
+	 * @return string
+	 */
+	public function getLinkUrl($name) {
+		$linkEntry = $this->findLinkEntryByName($name);
+		$linkUrlInput = $linkEntry->find("xpath", $this->linkUrlInputXpath);
+		if (is_null($linkUrlInput)) {
+			throw new ElementNotFoundException(
+				__METHOD__ .
+				" xpath $this->linkUrlInputXpath" .
+				" could not find input field that containts the link URL"
+			);
+		}
+		return $linkUrlInput->getValue();
 	}
 
 	/**
@@ -182,11 +203,23 @@ class PublicLinkTab extends OwncloudPage {
 	}
 
 	/**
-	 *
+	 * 
 	 * @param string $name
-	 * @return void
+	 * @throws ElementNotFoundException
+	 * @return NodeElement
 	 */
-	private function findLinkByName($name) {
-		throw new Exception("not implemented");
+	private function findLinkEntryByName($name) {
+		$xpathString = $this->quotedText($name);
+		$linkEntry = $this->publicLinkTabElement->find(
+			"xpath", sprintf($this->linkEntryByNameXpath, $xpathString)
+		);
+		if (is_null($linkEntry)) {
+			throw new ElementNotFoundException(
+				__METHOD__ .
+				" xpath $this->linkEntryByNameXpath" .
+				" could not find link entry with the given name"
+			);
+		}
+		return $linkEntry;
 	}
 }
