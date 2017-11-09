@@ -28,6 +28,8 @@ use Page\FilesPage;
 use SensioLabs\Behat\PageObjectExtension\PageObject\Exception\ElementNotFoundException;
 use Page\TrashbinPage;
 use SensioLabs\Behat\PageObjectExtension\PageObject\PageObject;
+use OC\Core\Command\Log\OwnCloud;
+use Page\OwncloudPage;
 
 require_once 'bootstrap.php';
 
@@ -77,6 +79,20 @@ class FilesContext extends RawMinkContext implements Context {
 	}
 
 	/**
+	 * returns the set page object from FeatureContext::getCurrentPageObject()
+	 * or if that in null the files page object
+	 * 
+	 * @return OwncloudPage
+	 */
+	private function getCurrentPageObject() {
+		$pageObject = $this->featureContext->getCurrentPageObject();
+		if (is_null($pageObject)) {
+			$pageObject = $this->filesPage;
+		}
+		return $pageObject;
+	}
+
+	/**
 	 * @Given I am on the files page
 	 * @return void
 	 */
@@ -92,7 +108,8 @@ class FilesContext extends RawMinkContext implements Context {
 	 */
 	public function theFilesPageIsReloaded() {
 		$this->getSession()->reload();
-		$this->filesPage->waitTillPageIsLoaded($this->getSession());
+		$pageObject = $this->getCurrentPageObject();
+		$pageObject->waitTillPageIsLoaded($this->getSession());
 	}
 
 	/**
@@ -225,9 +242,10 @@ class FilesContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function iDeleteTheFile($name) {
+		$pageObject = $this->getCurrentPageObject();
 		$session = $this->getSession();
-		$this->filesPage->waitTillPageIsLoaded($session);
-		$this->filesPage->deleteFile($name, $session);
+		$pageObject->waitTillPageIsLoaded($session);
+		$pageObject->deleteFile($name, $session);
 	}
 
 	/**
@@ -414,9 +432,6 @@ class FilesContext extends RawMinkContext implements Context {
 	public function theFileFolderShouldBeListed(
 		$name, $shouldOrNot, $trashbin = "", $pageObject = null
 	) {
-		if (is_null($pageObject)) {
-			$pageObject = $this->featureContext->getCurrentPageObject();
-		}
 		// The capturing group of the regex always includes the quotes at each
 		// end of the captured string, so trim them.
 		$this->checkIfFileFolderIsListed(
@@ -441,9 +456,7 @@ class FilesContext extends RawMinkContext implements Context {
 			$this->trashbinPage->open();
 			$pageObject = $this->trashbinPage;
 		} else {
-			if (is_null($pageObject)) {
-				$pageObject = $this->filesPage;
-			}
+			$pageObject = $this->getCurrentPageObject();
 		}
 
 		$pageObject->waitTillPageIsLoaded($this->getSession());
