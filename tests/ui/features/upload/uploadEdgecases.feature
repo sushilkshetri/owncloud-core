@@ -1,4 +1,5 @@
 @insulated
+@skipOnFIREFOX47
 Feature: File Upload
 
 As a QA engineer

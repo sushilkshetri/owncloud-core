@@ -92,14 +92,19 @@ BEHAT_TAG_OPTION="--tags"
 
 #we need to skip some tests in certain browsers
 #and also skip tests if tags were given in the call of this script
-if [ "$BROWSER" == "internet explorer" ] || [ "$BROWSER" == "MicrosoftEdge" ] || ([ "$BROWSER" == "firefox" ] && verlt "47.0" "$BROWSER_VERSION")
+if [ "$BROWSER" == "internet explorer" ] || [ "$BROWSER" == "MicrosoftEdge" ] || [ "$BROWSER" == "firefox" ]
 then
 	BROWSER_IN_CAPITALS=${BROWSER//[[:blank:]]/}
 	BROWSER_IN_CAPITALS=${BROWSER_IN_CAPITALS^^}
 	
 	if [ "$BROWSER" == "firefox" ]
 	then
-		BROWSER_IN_CAPITALS="$BROWSER_IN_CAPITALS"47+
+		if verlt "47.0" "$BROWSER_VERSION"
+		then
+			BROWSER_IN_CAPITALS="$BROWSER_IN_CAPITALS"47+
+		else
+			BROWSER_IN_CAPITALS="$BROWSER_IN_CAPITALS"47
+		fi
 	fi
 	
 	if [ "$BEHAT_TAGS_OPTION_FOUND" = true ]
